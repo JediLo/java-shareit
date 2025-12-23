@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -15,12 +16,12 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping("/{itemId}")
-    public ItemDto getItemById(@PathVariable("itemId") Long itemId) {
+    public ItemDto getItemById(@PathVariable("itemId") @NotNull Long itemId) {
         return itemService.findItemById(itemId);
     }
 
     @GetMapping
-    public Collection<ItemDto> getItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public Collection<ItemDto> getItems(@RequestHeader("X-Sharer-User-Id") @NotNull Long userId) {
         return itemService.findAllItemsUser(userId);
     }
 
@@ -30,20 +31,21 @@ public class ItemController {
     }
 
     @PostMapping
-    public ItemDto createItem(@Valid @RequestBody ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Long userId) {
+    public ItemDto createItem(@Valid @RequestBody @NotNull ItemDto itemDto,
+                              @RequestHeader("X-Sharer-User-Id") @NotNull Long userId) {
         return itemService.addNewItem(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItem(@RequestBody ItemDto itemDto,
-                              @RequestHeader("X-Sharer-User-Id") Long userId,
-                              @PathVariable("itemId") Long itemId) {
+    public ItemDto updateItem(@RequestBody @NotNull ItemDto itemDto,
+                              @RequestHeader("X-Sharer-User-Id") @NotNull Long userId,
+                              @PathVariable("itemId") @NotNull Long itemId) {
         return itemService.updateItem(userId, itemDto, itemId);
     }
 
     @DeleteMapping("/{itemId}")
-    public void deleteItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                           @PathVariable("itemId") Long itemId) {
+    public void deleteItem(@RequestHeader("X-Sharer-User-Id") @NotNull Long userId,
+                           @PathVariable("itemId") @NotNull Long itemId) {
         itemService.deleteItem(userId, itemId);
     }
 

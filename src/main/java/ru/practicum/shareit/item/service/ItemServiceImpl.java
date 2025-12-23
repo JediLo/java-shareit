@@ -22,7 +22,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Collection<ItemDto> findAllItemsUser(Long userId) {
-        validateUserId(userId);
+
         User user = userRepository.findUserByID(userId);
         validateUser(user);
         Collection<Item> items = itemRepository.findAllItemsUser(userId);
@@ -34,25 +34,31 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto addNewItem(Long userId, ItemDto itemDto) {
-        validateUserId(userId);
-        validateItemDto(itemDto);
         User user = userRepository.findUserByID(userId);
         validateUser(user);
         Item item = ItemMapperDto.toItem(itemDto, user, null);
-        Item saved = itemRepository.save(userId, item);
+        if (!item.getOwner().getId().equals(userId)) {
+            throw new ValidationException("Id хозяина вещи и ID пользователя должны быть идентичны.");
+        }
+        Item saved = itemRepository.save(item);
         return ItemMapperDto.toItemDto(saved);
     }
 
     @Override
     public void deleteItem(Long userId, Long itemId) {
-        validateUserId(userId);
-        validateItemId(itemId);
-        itemRepository.deleteByUserIdAndItemId(userId, itemId);
+        Item item = itemRepository.findByItemId(itemId);
+        if (item == null) {
+            return;
+        }
+        if (!item.getOwner().getId().equals(userId)) {
+            throw new ValidationException("Только хозяин вещи может ее удалить");
+        }
+        itemRepository.deleteByItemId(itemId);
     }
 
     @Override
     public ItemDto findItemById(Long itemId) {
-        validateItemId(itemId);
+
         Item item = itemRepository.findByItemId(itemId);
         if (item == null) {
             throw new NotFoundException("Предмет не найден");
@@ -75,9 +81,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto updateItem(Long userId, ItemDto itemDto, Long itemId) {
-        validateUserId(userId);
-        validateItemDto(itemDto);
-        validateItemId(itemId);
 
         User user = userRepository.findUserByID(userId);
         validateUser(user);
@@ -98,24 +101,6 @@ public class ItemServiceImpl implements ItemService {
             item.setAvailable(itemDto.getAvailable());
         }
         return ItemMapperDto.toItemDto(item);
-    }
-
-    private void validateUserId(Long userId) {
-        if (userId == null) {
-            throw new ValidationException("Не указан ID пользователя");
-        }
-    }
-
-    private void validateItemId(Long itemId) {
-        if (itemId == null) {
-            throw new ValidationException("Не указан ID предмета");
-        }
-    }
-
-    private void validateItemDto(ItemDto itemDto) {
-        if (itemDto == null) {
-            throw new ValidationException("Не переданы данные предмета");
-        }
     }
 
     private void validateUser(User user) {

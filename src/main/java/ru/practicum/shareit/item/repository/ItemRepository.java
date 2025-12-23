@@ -7,9 +7,9 @@ import java.util.Collection;
 
 public interface ItemRepository {
 
-    Item save(Long userId, Item item);
+    Item save(Item item);
 
-    void deleteByUserIdAndItemId(Long userId, Long itemId);
+    void deleteByItemId(Long itemId);
 
     Collection<Item> findAllItemsUser(Long userId);
 

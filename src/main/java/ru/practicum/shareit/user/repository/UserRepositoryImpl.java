@@ -3,12 +3,13 @@ package ru.practicum.shareit.user.repository;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
 public class UserRepositoryImpl implements UserRepository {
-    private final Map<Long, User> users = new HashMap<>();
+    private final Map<Long, User> users = new LinkedHashMap<>();
+    private long nextId = 1;
 
     @Override
     public User findUserByID(Long userId) {
@@ -17,8 +18,9 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User save(User user) {
-        user.setId(getId());
-        users.put(user.getId(), user);
+        user.setId(nextId);
+        users.put(nextId, user);
+        nextId++;
         return user;
     }
 
@@ -42,11 +44,4 @@ public class UserRepositoryImpl implements UserRepository {
                 .anyMatch(user -> user.getEmail().equalsIgnoreCase(email) && !user.getId().equals(userId));
     }
 
-    private long getId() {
-        long lastId = users.values().stream()
-                .mapToLong(User::getId)
-                .max()
-                .orElse(0);
-        return lastId + 1;
-    }
 }
