@@ -4,7 +4,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.comment.CommentDto;
+import ru.practicum.shareit.item.dto.comment.response.CommentResponseDto;
+import ru.practicum.shareit.item.dto.item.ItemBaseDto;
+import ru.practicum.shareit.item.dto.response.ItemResponseDto;
+import ru.practicum.shareit.item.dto.response.ItemResponseMapperDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.Collection;
@@ -16,37 +20,46 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping("/{itemId}")
-    public ItemDto getItemById(@PathVariable("itemId") @NotNull Long itemId) {
-        return itemService.findItemById(itemId);
+    public ItemResponseDto getItemById(@PathVariable("itemId") @NotNull Long itemId,
+                                       @RequestHeader("X-Sharer-User-Id") @NotNull Long userId) {
+        return itemService.findItemById(itemId, userId);
     }
 
     @GetMapping
-    public Collection<ItemDto> getItems(@RequestHeader("X-Sharer-User-Id") @NotNull Long userId) {
+    public Collection<ItemResponseDto> getItems(@RequestHeader("X-Sharer-User-Id") @NotNull Long userId) {
         return itemService.findAllItemsUser(userId);
     }
 
     @GetMapping("/search")
-    public Collection<ItemDto> getItemByText(@RequestParam("text") String text) {
-        return itemService.findItemByText(text);
+    public Collection<ItemResponseDto> getItemByText(@RequestParam("text") String text,
+                                                     @RequestHeader("X-Sharer-User-Id") @NotNull Long userId) {
+        return itemService.findItemByText(text, userId);
     }
 
     @PostMapping
-    public ItemDto createItem(@Valid @RequestBody @NotNull ItemDto itemDto,
-                              @RequestHeader("X-Sharer-User-Id") @NotNull Long userId) {
-        return itemService.addNewItem(userId, itemDto);
+    public ItemResponseDto createItem(@Valid @RequestBody @NotNull ItemBaseDto itemBaseDto,
+                                  @RequestHeader("X-Sharer-User-Id") @NotNull Long userId) {
+        return itemService.addNewItem(userId, itemBaseDto);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItem(@RequestBody @NotNull ItemDto itemDto,
-                              @RequestHeader("X-Sharer-User-Id") @NotNull Long userId,
-                              @PathVariable("itemId") @NotNull Long itemId) {
-        return itemService.updateItem(userId, itemDto, itemId);
+    public ItemResponseDto updateItem(@RequestBody @NotNull ItemBaseDto itemBaseDto,
+                                  @RequestHeader("X-Sharer-User-Id") @NotNull Long userId,
+                                  @PathVariable("itemId") @NotNull Long itemId) {
+        return itemService.updateItem(userId, itemBaseDto, itemId);
     }
 
     @DeleteMapping("/{itemId}")
     public void deleteItem(@RequestHeader("X-Sharer-User-Id") @NotNull Long userId,
                            @PathVariable("itemId") @NotNull Long itemId) {
         itemService.deleteItem(userId, itemId);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentResponseDto addComment(@RequestBody @NotNull @Valid CommentDto commentDto,
+                                         @RequestHeader("X-Sharer-User-Id") @NotNull Long userId,
+                                         @PathVariable("itemId") @NotNull Long itemId) {
+        return itemService.addComment(commentDto, itemId, userId);
     }
 
 }
