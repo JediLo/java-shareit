@@ -54,3 +54,4 @@ CREATE TABLE IF NOT EXISTS comments(
 
 
 
+--psql -U postgres -d shareit

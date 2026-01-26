@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.booking.dto.response.BookingResponseDto;
+import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.service.BookingService;
 
@@ -38,13 +38,13 @@ public class BookingController {
 
     @GetMapping
     public Collection<BookingResponseDto> getBookingsByStateToBooker(@RequestHeader("X-Sharer-User-Id") @NotNull Long userId,
-                                                                     @RequestParam(value = "state", required = false) BookingState state) {
+                                                                     @RequestParam(value = "state", defaultValue = "ALL") BookingState state) {
         return bookingService.getBookingsByStateToBooker(userId, state);
     }
 
     @GetMapping("/owner")
     public Collection<BookingResponseDto> getBookingsByStateToOwner(@RequestHeader("X-Sharer-User-Id") @NotNull Long userId,
-                                                                    @RequestParam(value = "state", required = false) BookingState state) {
+                                                                    @RequestParam(value = "state", defaultValue = "ALL") BookingState state) {
         return bookingService.getBookingsByStateToOwner(userId, state);
     }
 }

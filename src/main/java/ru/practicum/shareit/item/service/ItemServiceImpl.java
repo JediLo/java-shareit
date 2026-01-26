@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -10,12 +11,11 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.comment.CommentDto;
 import ru.practicum.shareit.item.dto.comment.CommentMapperDto;
-import ru.practicum.shareit.item.dto.comment.response.CommentResponseDto;
-import ru.practicum.shareit.item.dto.comment.response.CommentResponseMapperDto;
+import ru.practicum.shareit.item.dto.comment.CommentResponseDto;
 import ru.practicum.shareit.item.dto.item.ItemBaseDto;
 import ru.practicum.shareit.item.dto.item.ItemMapperDto;
-import ru.practicum.shareit.item.dto.response.ItemResponseDto;
-import ru.practicum.shareit.item.dto.response.ItemResponseMapperDto;
+import ru.practicum.shareit.item.dto.item.response.ItemResponseDto;
+import ru.practicum.shareit.item.dto.item.response.ItemResponseMapperDto;
 import ru.practicum.shareit.item.model.BookingTime;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -100,7 +100,7 @@ public class ItemServiceImpl implements ItemService {
             return Collections.emptyList();
         }
         Collection<Item> items = itemRepository
-                .findByAvailableTrueAndNameContainingIgnoreCaseOrAvailableTrueAndDescriptionContainingIgnoreCase(text, text);
+                .searchAvailableItems(text);
         if (items.isEmpty()) {
             return Collections.emptyList();
         }
@@ -147,7 +147,7 @@ public class ItemServiceImpl implements ItemService {
             throw new ValidationException("Комментарии можно писать только под той вещью, которую вы уже брали в аренду");
         }
         Comment saved = commentRepository.save(CommentMapperDto.toComment(commentDto, item, user));
-        return CommentResponseMapperDto.toResponseDto(saved);
+        return CommentMapperDto.toResponseDto(saved);
     }
 
     private NotFoundException userNotFound(Long userId) {
@@ -162,27 +162,31 @@ public class ItemServiceImpl implements ItemService {
         return commentRepository
                 .findAllByItemId(itemId)
                 .stream()
-                .map(CommentResponseMapperDto::toResponseDto)
+                .map(CommentMapperDto::toResponseDto)
                 .toList();
     }
 
     private ItemResponseDto getItemResponseDto(Item item, Long userId, LocalDateTime now) {
 
         BookingStatus approved = BookingStatus.APPROVED;
+        Sort sortByStartAsc = Sort.by(Sort.Direction.ASC, "start");
+        Sort sortByEndDesc = Sort.by(Sort.Direction.DESC, "end");
         BookingTime last = null;
         BookingTime next = null;
         if (item.getOwner().getId().equals(userId)) {
             last = bookingRepository
-                    .findFirstByItemIdAndStatusAndEndBeforeOrderByEndDesc(item.getId(),
+                    .findFirstByItemIdAndStatusAndEndBefore(item.getId(),
                             approved,
-                            now)
+                            now,
+                            sortByEndDesc)
                     .map(booking -> new BookingTime(booking.getStart(), booking.getEnd()))
                     .orElse(null);
 
             next = bookingRepository
-                    .findFirstByItemIdAndStatusAndStartAfterOrderByStartAsc(item.getId(),
+                    .findFirstByItemIdAndStatusAndStartAfter(item.getId(),
                             approved,
-                            now)
+                            now,
+                            sortByStartAsc)
                     .map(booking -> new BookingTime(booking.getStart(), booking.getEnd()))
                     .orElse(null);
         }

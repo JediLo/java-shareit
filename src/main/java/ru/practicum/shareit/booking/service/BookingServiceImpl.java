@@ -2,12 +2,12 @@ package ru.practicum.shareit.booking.service;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingMapperDto;
-import ru.practicum.shareit.booking.dto.response.BookingResponseDto;
-import ru.practicum.shareit.booking.dto.response.BookingResponseMapperDto;
+import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -32,6 +32,7 @@ public class BookingServiceImpl implements BookingService {
     private final ItemRepository itemRepository;
 
     @Override
+    @Transactional
     public BookingResponseDto addBooking(BookingDto bookingDto, Long userId) {
         Item bookingItem = itemRepository.findById(bookingDto.getItemId())
                 .orElseThrow(() -> new NotFoundException("Предмет не найден"));
@@ -45,10 +46,11 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = BookingMapperDto.toBooking(bookingDto, bookingItem, user);
         booking.setStatus(BookingStatus.WAITING);
         Booking saved = bookingRepository.save(booking);
-        return BookingResponseMapperDto.toBookingResponseDto(saved);
+        return BookingMapperDto.toBookingResponseDto(saved);
     }
 
     @Override
+    @Transactional
     public BookingResponseDto addStatusBooking(boolean approved, Long bookingId, Long userId) {
         Booking booking = bookingRepository
                 .findById(bookingId)
@@ -61,7 +63,7 @@ public class BookingServiceImpl implements BookingService {
             throw new ValidationException("На этот предмет нет бронирования, подтвердить или отклонить нельзя");
         }
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
-        return BookingResponseMapperDto.toBookingResponseDto(booking);
+        return BookingMapperDto.toBookingResponseDto(booking);
     }
 
     @Override
@@ -73,7 +75,7 @@ public class BookingServiceImpl implements BookingService {
         if (!booking.getItem().getOwner().getId().equals(userId) && !booking.getBooker().getId().equals(userId)) {
             throw new ValidationException("Запрос может выполнить хозяин вещи или хозяин брони");
         }
-        return BookingResponseMapperDto.toBookingResponseDto(booking);
+        return BookingMapperDto.toBookingResponseDto(booking);
     }
 
     @Override
@@ -84,11 +86,12 @@ public class BookingServiceImpl implements BookingService {
         LocalDateTime now = LocalDateTime.now();
         boolean owner = false;
 
-        return getBookingByState(userId, state, owner, now).stream().map(BookingResponseMapperDto::toBookingResponseDto)
+        return getBookingByState(userId, state, owner, now).stream().map(BookingMapperDto::toBookingResponseDto)
                 .toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Collection<BookingResponseDto> getBookingsByStateToOwner(Long userId, BookingState state) {
 
         userRepository.findById(userId).orElseThrow(() -> userNotFound(userId));
@@ -96,7 +99,7 @@ public class BookingServiceImpl implements BookingService {
         LocalDateTime now = LocalDateTime.now();
         boolean owner = true;
 
-        return getBookingByState(userId, state, owner, now).stream().map(BookingResponseMapperDto::toBookingResponseDto)
+        return getBookingByState(userId, state, owner, now).stream().map(BookingMapperDto::toBookingResponseDto)
                 .toList();
     }
 
@@ -113,32 +116,31 @@ public class BookingServiceImpl implements BookingService {
                                                   BookingState state,
                                                   boolean owner,
                                                   LocalDateTime now) {
+        Sort sortByStartDesc = Sort.by(Sort.Direction.DESC, "start");
 
-        if (state == null) {
-            return owner ? bookingRepository.findAllByItemOwnerIdOrderByStartDesc(userId)
-                    : bookingRepository.findAllByBookerIdOrderByStartDesc(userId);
-        } else {
-            return switch (state) {
-                case PAST -> owner ?
-                        bookingRepository.findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(userId, now)
-                        : bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(userId, now);
-                case CURRENT -> owner ?
-                        bookingRepository
-                                .findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, now, now)
-                        : bookingRepository
-                        .findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, now, now);
-                case FUTURE -> owner ?
-                        bookingRepository.findAllByItemOwnerIdAndStartAfterOrderByStartDesc(userId, now)
-                        : bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(userId, now);
-                case WAITING, REJECTED -> {
-                    BookingStatus status = BookingStatus.valueOf(state.name());
-                    yield owner ?
-                            bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(userId, status)
-                            : bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(userId, status);
-                }
-            };
-        }
-
+        return switch (state) {
+            case ALL -> owner ? bookingRepository.findAllByItemOwnerId(userId, sortByStartDesc)
+                    : bookingRepository.findAllByBookerId(userId, sortByStartDesc);
+            case PAST -> owner ?
+                    bookingRepository.findAllByItemOwnerIdAndEndBefore(userId, now, sortByStartDesc)
+                    : bookingRepository.findAllByBookerIdAndEndBefore(userId, now, sortByStartDesc);
+            case CURRENT -> owner ?
+                    bookingRepository
+                            .findAllByItemOwnerIdAndStartBeforeAndEndAfter(userId, now, now, sortByStartDesc)
+                    : bookingRepository
+                    .findAllByBookerIdAndStartBeforeAndEndAfter(userId, now, now, sortByStartDesc);
+            case FUTURE -> owner ?
+                    bookingRepository.findAllByItemOwnerIdAndStartAfter(userId, now, sortByStartDesc)
+                    : bookingRepository.findAllByBookerIdAndStartAfter(userId, now, sortByStartDesc);
+            case WAITING, REJECTED -> {
+                BookingStatus status = BookingStatus.valueOf(state.name());
+                yield owner ?
+                        bookingRepository.findAllByItemOwnerIdAndStatus(userId, status, sortByStartDesc)
+                        : bookingRepository.findAllByBookerIdAndStatus(userId, status, sortByStartDesc);
+            }
+        };
     }
 
 }
+
+

@@ -1,7 +1,7 @@
-package ru.practicum.shareit.item.dto.response;
+package ru.practicum.shareit.item.dto.item.response;
 
 import lombok.experimental.UtilityClass;
-import ru.practicum.shareit.item.dto.comment.response.CommentResponseDto;
+import ru.practicum.shareit.item.dto.comment.CommentResponseDto;
 import ru.practicum.shareit.item.model.BookingTime;
 import ru.practicum.shareit.item.model.Item;
 

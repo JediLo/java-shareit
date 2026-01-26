@@ -11,7 +11,6 @@ import ru.practicum.shareit.user.model.User;
 @Setter
 @NoArgsConstructor
 @Table(name = "requests")
-
 public class ItemRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
