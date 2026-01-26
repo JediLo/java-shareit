@@ -1,6 +1,5 @@
 package ru.practicum.shareit.booking.service;
 
-import jakarta.validation.constraints.NotNull;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.response.BookingResponseDto;
 import ru.practicum.shareit.booking.model.BookingState;
@@ -12,9 +11,9 @@ public interface BookingService {
 
     BookingResponseDto addStatusBooking(boolean approved, Long bookingId, Long userId);
 
-    BookingResponseDto getBooking(Long bookingId,  Long userId);
+    BookingResponseDto getBooking(Long bookingId, Long userId);
 
     Collection<BookingResponseDto> getBookingsByStateToBooker(Long userId, BookingState state);
 
-    Collection<BookingResponseDto> getBookingsByStateToOwner( Long userId, BookingState state);
+    Collection<BookingResponseDto> getBookingsByStateToOwner(Long userId, BookingState state);
 }

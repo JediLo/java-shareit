@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class BookingTime{
+public class BookingTime {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 

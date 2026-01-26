@@ -19,21 +19,21 @@ public class BookingController {
 
     @PostMapping
     public BookingResponseDto createBooking(@Valid @RequestBody BookingDto bookingDto,
-                                    @RequestHeader("X-Sharer-User-Id") @NotNull Long userId) {
-        return bookingService.addBooking(bookingDto,userId);
+                                            @RequestHeader("X-Sharer-User-Id") @NotNull Long userId) {
+        return bookingService.addBooking(bookingDto, userId);
     }
 
     @PatchMapping("/{bookingId}")
     public BookingResponseDto addStatusBooking(@RequestParam("approved") boolean approved,
-                                       @RequestHeader("X-Sharer-User-Id") @NotNull Long userId,
-                                       @PathVariable("bookingId") Long bookingId) {
+                                               @RequestHeader("X-Sharer-User-Id") @NotNull Long userId,
+                                               @PathVariable("bookingId") Long bookingId) {
         return bookingService.addStatusBooking(approved, bookingId, userId);
     }
 
     @GetMapping("/{bookingId}")
     public BookingResponseDto getBooking(@PathVariable("bookingId") Long bookingId,
-                                 @RequestHeader("X-Sharer-User-Id") @NotNull Long userId) {
-        return bookingService.getBooking(bookingId,userId);
+                                         @RequestHeader("X-Sharer-User-Id") @NotNull Long userId) {
+        return bookingService.getBooking(bookingId, userId);
     }
 
     @GetMapping
@@ -44,7 +44,7 @@ public class BookingController {
 
     @GetMapping("/owner")
     public Collection<BookingResponseDto> getBookingsByStateToOwner(@RequestHeader("X-Sharer-User-Id") @NotNull Long userId,
-                                                            @RequestParam(value = "state", required = false) BookingState state) {
+                                                                    @RequestParam(value = "state", required = false) BookingState state) {
         return bookingService.getBookingsByStateToOwner(userId, state);
     }
 }

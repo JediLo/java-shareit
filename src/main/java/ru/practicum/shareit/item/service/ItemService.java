@@ -4,7 +4,6 @@ import ru.practicum.shareit.item.dto.comment.CommentDto;
 import ru.practicum.shareit.item.dto.comment.response.CommentResponseDto;
 import ru.practicum.shareit.item.dto.item.ItemBaseDto;
 import ru.practicum.shareit.item.dto.response.ItemResponseDto;
-import ru.practicum.shareit.item.dto.response.ItemResponseMapperDto;
 
 import java.util.Collection;
 
@@ -15,7 +14,7 @@ public interface ItemService {
 
     void deleteItem(Long userId, Long itemId);
 
-    ItemResponseDto findItemById(Long itemId,  Long userId);
+    ItemResponseDto findItemById(Long itemId, Long userId);
 
     Collection<ItemResponseDto> findAllItemsUser(Long userId);
 
