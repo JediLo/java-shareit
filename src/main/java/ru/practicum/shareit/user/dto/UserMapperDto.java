@@ -6,6 +6,9 @@ import ru.practicum.shareit.user.model.User;
 @UtilityClass
 public class UserMapperDto {
     public static UserDto toUserDto(User user) {
+        if (user == null) {
+            return null;
+        }
         return new UserDto(
                 user.getId(),
                 user.getName(),
@@ -14,11 +17,9 @@ public class UserMapperDto {
     }
 
     public static User toUser(UserDto userDto) {
-
-        User user = new User();
-        user.setId(userDto.getId());
-        user.setName(userDto.getName());
-        user.setEmail(userDto.getEmail());
-        return user;
+        if (userDto == null) {
+            return null;
+        }
+        return new User(userDto.getName(), userDto.getEmail());
     }
 }
