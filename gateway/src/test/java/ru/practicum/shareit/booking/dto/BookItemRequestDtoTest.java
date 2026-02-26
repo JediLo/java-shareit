@@ -37,12 +37,11 @@ class BookItemRequestDtoTest {
 
     @Test
     void shouldDeserializeDtoCorrect() throws Exception {
-        String content = """
-                {
-                "start": "2026-02-15T06:30:00",
-                "end": "2026-02-15T06:35:00",
-                "itemId": "15"}
-                """;
+        String content = "{\n" +
+                "  \"start\": \"2026-02-15T06:30:00\",\n" +
+                "  \"end\": \"2026-02-15T06:35:00\",\n" +
+                "  \"itemId\": \"15\"\n" +
+                "}";
         BookItemRequestDto bookItemRequestDto = jsonTester.parse(content).getObject();
         assertThat(bookItemRequestDto.getStart())
                 .isEqualTo(LocalDateTime.of(2026, 2, 15, 6, 30));
