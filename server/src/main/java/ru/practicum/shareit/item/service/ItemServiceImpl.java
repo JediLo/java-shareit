@@ -57,7 +57,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    @Transactional
     public ItemResponseDto addNewItem(Long userId, ItemBaseDto itemBaseDto) {
 
         User user = userRepository.findById(userId).orElseThrow(() -> userNotFound(userId));
@@ -77,7 +76,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    @Transactional
     public void deleteItem(Long userId, Long itemId) {
         Item item = itemRepository
                 .findById(itemId)
@@ -118,7 +116,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    @Transactional
     public ItemResponseDto updateItem(Long userId, ItemBaseDto itemBaseDto, Long itemId) {
 
         userRepository.findById(userId).orElseThrow(() -> userNotFound(userId));
@@ -142,7 +139,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    @Transactional
     public CommentResponseDto addComment(CommentDto commentDto, Long itemId, Long userId) {
         Item item = itemRepository.findById(itemId).orElseThrow(() -> itemNotFound(itemId));
         User user = userRepository.findById(userId).orElseThrow(() -> userNotFound(userId));

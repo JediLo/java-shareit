@@ -22,7 +22,7 @@ import java.util.Collection;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class ItemRequestServiceImpl implements ItemRequestService {
 
     private final ItemRequestRepository itemRequestRepository;
@@ -34,15 +34,17 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     public ItemRequestResponseDto addRequest(Long userId, ItemRequestDto itemRequestDto) {
         User user = userRepository
                 .findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь c ID " + userId + " не найден"));
+                .orElseThrow(() -> userNotFound(userId));
         ItemRequest itemRequest = ItemRequestMapperDto.toItemRequest(itemRequestDto, user);
         ItemRequest saved = itemRequestRepository.save(itemRequest);
         return getItemRequestResponseDto(saved);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public Collection<ItemRequestResponseDto> findRequestsByUserId(Long userId, Integer from, Integer size) {
+        userRepository
+                .findById(userId)
+                .orElseThrow(() -> userNotFound(userId));
         Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "created"));
         return itemRequestRepository.findByRequestorId(userId, pageable)
                 .getContent()
@@ -51,9 +53,11 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     @Override
     public Collection<ItemRequestResponseDto> findAllRequests(Long userId, Integer from, Integer size) {
+        userRepository
+                .findById(userId)
+                .orElseThrow(() -> userNotFound(userId));
         Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "created"));
 
         return itemRequestRepository.findAll(pageable)
@@ -63,9 +67,11 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     @Override
     public ItemRequestResponseDto findRequestById(Long userId, Long requestId) {
+        userRepository
+                .findById(userId)
+                .orElseThrow(() -> userNotFound(userId));
         ItemRequest itemRequest = itemRequestRepository
                 .findById(requestId)
                 .orElseThrow(() -> new NotFoundException("Запрос с Id " + requestId + " не найден"));
@@ -77,6 +83,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         Collection<Item> items = itemRepository.findAllByRequestId(itemRequest.getId());
         Collection<ItemShortDto> itemShorts = items.stream().map(ItemShortDto::new).toList();
         return ItemRequestMapperDto.toItemRequestResponseDto(itemRequest, itemShorts);
+    }
+
+    private NotFoundException userNotFound(Long userId) {
+        return new NotFoundException("Пользователь c ID " + userId + " не найден");
     }
 
 }
