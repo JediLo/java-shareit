@@ -116,6 +116,7 @@ class ItemRequestServiceImplTest {
         Item item = createItemById(itemId, user);
         Collection<Item> items = List.of(item);
 
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(itemRequestRepository.findByRequestorId(eq(userId), any(Pageable.class))).thenReturn(itemRequestPage);
         when(itemRepository.findAllByRequestId(any(Long.class))).thenReturn(items);
 
@@ -138,7 +139,9 @@ class ItemRequestServiceImplTest {
         Long userId = 1L;
         int from = 0;
         int size = 10;
+        User user = createUserById(userId);
 
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(itemRequestRepository.findByRequestorId(eq(userId), any(Pageable.class))).thenReturn(Page.empty());
 
         Collection<ItemRequestResponseDto> result = itemRequestService.findRequestsByUserId(userId, from, size);
@@ -169,6 +172,7 @@ class ItemRequestServiceImplTest {
         Item item = createItemById(itemId, user);
         Collection<Item> items = List.of(item);
 
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(itemRequestRepository.findAll(any(Pageable.class))).thenReturn(itemRequestPage);
         when(itemRepository.findAllByRequestId(requestId)).thenReturn(items);
 
@@ -191,7 +195,8 @@ class ItemRequestServiceImplTest {
         Long userId = 1L;
         int from = 0;
         int size = 10;
-
+        User user = createUserById(userId);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(itemRequestRepository.findAll(any(Pageable.class))).thenReturn(Page.empty());
 
         Collection<ItemRequestResponseDto> result = itemRequestService.findAllRequests(userId, from, size);
@@ -217,7 +222,7 @@ class ItemRequestServiceImplTest {
         ItemRequest itemRequest = createItemRequest("description", user, requestId);
         Item item = createItemById(itemId, user);
         Collection<Item> items = List.of(item);
-
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(itemRequestRepository.findById(requestId)).thenReturn(Optional.of(itemRequest));
         when(itemRepository.findAllByRequestId(requestId)).thenReturn(items);
 
@@ -235,7 +240,9 @@ class ItemRequestServiceImplTest {
 
         Long userId = 1L;
         Long requestId = 3L;
+        User user = createUserById(userId);
 
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(itemRequestRepository.findById(requestId)).thenReturn(Optional.empty());
 
         NotFoundException exception = assertThrows(
