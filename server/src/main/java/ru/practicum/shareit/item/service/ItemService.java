@@ -1,0 +1,26 @@
+package ru.practicum.shareit.item.service;
+
+import ru.practicum.shareit.item.dto.comment.CommentDto;
+import ru.practicum.shareit.item.dto.comment.CommentResponseDto;
+import ru.practicum.shareit.item.dto.item.ItemBaseDto;
+import ru.practicum.shareit.item.dto.item.response.ItemResponseDto;
+
+import java.util.Collection;
+
+
+public interface ItemService {
+
+    ItemResponseDto addNewItem(Long userId, ItemBaseDto item);
+
+    void deleteItem(Long userId, Long itemId);
+
+    ItemResponseDto findItemById(Long itemId, Long userId);
+
+    Collection<ItemResponseDto> findAllItemsUser(Long userId, Integer from, Integer size);
+
+    Collection<ItemResponseDto> findItemByText(String text, Long userId, Integer from, Integer size);
+
+    ItemResponseDto updateItem(Long userId, ItemBaseDto itemBaseDto, Long itemId);
+
+    CommentResponseDto addComment(CommentDto commentDto, Long itemId, Long userId);
+}
